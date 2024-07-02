@@ -1,5 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure.Core;
+using Microsoft.EntityFrameworkCore;
 using RunningApplicationAPI.Models;
+using RunningApplicationAPI.Models.Data;
+using RunningApplicationAPI.Models.Request;
+using RunningApplicationAPI.ViewModels;
 
 namespace RunningApplicationAPI.Repository
 {
@@ -12,27 +16,91 @@ namespace RunningApplicationAPI.Repository
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<RunningActivity>> GetAll()
+        public async Task<IEnumerable<RunningViewModel>> GetAll()
         {
-            return await _dbContext.RunningActivities.Include(r => r.UserProfile).ToListAsync();
+            var running = await _dbContext.RunningActivities.Include(u => u.UserProfile).ToListAsync();
+
+            var result = running.Select(r => new RunningViewModel
+            {
+                Id = r.Id,
+                Location = r.Location,
+                StartTime = r.StartTime,
+                EndTime = r.EndTime,
+                Distance = r.Distance,
+                Duration = r.EndTime - r.StartTime,
+                AveragePace = r.Distance > 0 ? (r.EndTime - r.StartTime).TotalMinutes / r.Distance : 0,
+                UserProfile = new UserProfileViewModel
+                {
+                    Id = r.UserProfile.Id,
+                    Name = r.UserProfile.Name,
+                    Weight = r.UserProfile.Weight,
+                    Height = r.UserProfile.Height,
+                    BirthDate = r.UserProfile.BirthDate,
+                    Age = DateTime.Now.Year - r.UserProfile.BirthDate.Year,
+                    BMI = r.UserProfile.Weight / Math.Pow(r.UserProfile.Height / 100, 2),
+                }
+            }).ToList();
+
+            return result;
         }
 
-        public async Task<RunningActivity> GetById(int id)
+        public async Task<RunningViewModel> GetById(int id)
         {
-            return await _dbContext.RunningActivities.Include(r => r.UserProfile)
-                                                   .FirstOrDefaultAsync(r => r.Id == id);
+            var r = await _dbContext.RunningActivities.Where(o => o.Id == id).Include(u => u.UserProfile).FirstOrDefaultAsync();
+
+            var result = new RunningViewModel
+            {
+                Id = r.Id,
+                Location = r.Location,
+                StartTime = r.StartTime,
+                EndTime = r.EndTime,
+                Distance = r.Distance,
+                Duration = r.EndTime - r.StartTime,
+                AveragePace = r.Distance > 0 ? (r.EndTime - r.StartTime).TotalMinutes / r.Distance : 0,
+                UserProfile = new UserProfileViewModel
+                {
+                    Id = r.UserProfile.Id,
+                    Name = r.UserProfile.Name,
+                    Weight = r.UserProfile.Weight,
+                    Height = r.UserProfile.Height,
+                    BirthDate = r.UserProfile.BirthDate,
+                    Age = DateTime.Now.Year - r.UserProfile.BirthDate.Year,
+                    BMI = r.UserProfile.Weight / Math.Pow(r.UserProfile.Height / 100, 2),
+                }
+            };
+
+            return result;
         }
 
-        public async Task Add(RunningActivity runningActivity)
+        public async Task Add(CreateRunningRequest req)
         {
-            _dbContext.RunningActivities.Add(runningActivity);
+            var running = new RunningActivity()
+            {
+                Location = req.Location,
+                StartTime = req.StartTime,
+                EndTime = req.EndTime,
+                Distance = req.Distance,
+                UserProfileId = req.UserProfileId
+            };
+
+            _dbContext.RunningActivities.Add(running);
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task Update(RunningActivity runningActivity)
+        public async Task Update(UpdateRunningRequest request)
         {
-            _dbContext.Entry(runningActivity).State = EntityState.Modified;
-            await _dbContext.SaveChangesAsync();
+            var running = await _dbContext.RunningActivities.FirstOrDefaultAsync(p => p.Id == request.Id);
+            if (running != null)
+            {
+                running.Location = request.Location;
+                running.StartTime = request.StartTime;
+                running.EndTime = request.EndTime;
+                running.Distance = request.Distance;
+                running.UserProfileId = request.UserProfileId;
+
+                _dbContext.RunningActivities.Update(running);
+                await _dbContext.SaveChangesAsync();
+            }
         }
 
         public async Task Delete(int id)

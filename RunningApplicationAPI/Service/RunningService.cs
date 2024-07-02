@@ -1,5 +1,7 @@
 ﻿using RunningApplicationAPI.Models;
+using RunningApplicationAPI.Models.Request;
 using RunningApplicationAPI.Repository;
+using RunningApplicationAPI.ViewModels;
 
 namespace RunningApplicationAPI.Service
 {
@@ -13,25 +15,25 @@ namespace RunningApplicationAPI.Service
             _logger = logger;
         }
 
-        public async Task<IEnumerable<RunningActivity>> GetAllRunningActivities()
+        public async Task<IEnumerable<RunningViewModel>> GetAllRunningActivities()
         {
             _logger.LogInformation("Getting all running activities.");
             return await _repository.GetAll();
         }
 
-        public async Task<RunningActivity> GetRunningActivityById(int id)
+        public async Task<RunningViewModel> GetRunningActivityById(int id)
         {
             _logger.LogInformation($"Getting running activity with id {id}.");
             return await _repository.GetById(id);
         }
 
-        public async Task AddRunningActivity(RunningActivity runningActivity)
+        public async Task AddRunningActivity(CreateRunningRequest runningActivity)
         {
             _logger.LogInformation($"Adding running activity at location {runningActivity.Location}.");
             await _repository.Add(runningActivity);
         }
 
-        public async Task UpdateRunningActivity(RunningActivity runningActivity)
+        public async Task UpdateRunningActivity(UpdateRunningRequest runningActivity)
         {
             _logger.LogInformation($"Updating running activity with id {runningActivity.Id}.");
             await _repository.Update(runningActivity);

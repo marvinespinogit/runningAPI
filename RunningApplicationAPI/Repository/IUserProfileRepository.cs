@@ -1,13 +1,15 @@
 ﻿using RunningApplicationAPI.Models;
+using RunningApplicationAPI.Models.Request;
+using RunningApplicationAPI.ViewModels;
 
 namespace RunningApplicationAPI.Repository
 {
     public interface IUserProfileRepository
     {
-        Task<IEnumerable<UserProfile>> GetAll();
-        Task<UserProfile> GetById(int id);
-        Task Add(UserProfile userProfile);
-        Task Update(UserProfile userProfile);
+        Task<IEnumerable<UserProfileViewModel>> GetAll();
+        Task<UserProfileViewModel> GetById(int id);
+        Task Add(CreateUserProfileRequest userProfile);
+        Task Update(UpdateUserProfileRequest userProfile);
         Task Delete(int id);
     }
 }

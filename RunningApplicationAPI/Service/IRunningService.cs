@@ -1,13 +1,15 @@
 ﻿using RunningApplicationAPI.Models;
+using RunningApplicationAPI.Models.Request;
+using RunningApplicationAPI.ViewModels;
 
 namespace RunningApplicationAPI.Service
 {
     public interface IRunningService
     {
-        Task<IEnumerable<RunningActivity>> GetAllRunningActivities();
-        Task<RunningActivity> GetRunningActivityById(int id);
-        Task AddRunningActivity(RunningActivity runningActivity);
-        Task UpdateRunningActivity(RunningActivity runningActivity);
+        Task<IEnumerable<RunningViewModel>> GetAllRunningActivities();
+        Task<RunningViewModel> GetRunningActivityById(int id);
+        Task AddRunningActivity(CreateRunningRequest runningActivity);
+        Task UpdateRunningActivity(UpdateRunningRequest runningActivity);
         Task DeleteRunningActivity(int id);
     }
 }
